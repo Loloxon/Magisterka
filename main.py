@@ -5,10 +5,10 @@ import sympy as sp
 from matplotlib import pyplot as plt
 from scipy.optimize import curve_fit, fsolve
 
-from drone_annealing import DroneAnnealing
-from drone_model_estimator import DroneModelEstimator
-from drone_no_descent import DroneNoDescent
-from drone_random import DroneRandom
+from drones.drone_annealing import DroneAnnealing
+from drones.drone_model_estimator import DroneModelEstimator
+from drones.drone_no_descent import DroneNoDescent
+from drones.drone_random import DroneRandom
 from gui import GUI
 from utils import preprocess, load_matrix
 
@@ -204,7 +204,7 @@ class MainClass:
         root = tk.Tk()
         image_size = 1000
         cells_number = 125
-        map_size = 1000
+        map_size = 600
         cell_size = map_size // cells_number
         file_name = "góry"
         preprocess("assets/original/" + file_name + ".tiff", cells_number, image_size,

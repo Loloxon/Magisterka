@@ -6,7 +6,7 @@ from time import sleep
 
 from tabulate import tabulate
 
-from drone_no_descent import DroneNoDescent
+from drones.drone_no_descent import DroneNoDescent
 from map import Map
 from utils import plot_scores
 
