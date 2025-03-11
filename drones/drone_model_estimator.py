@@ -1,5 +1,3 @@
-import random
-
 import numpy as np
 
 from drone_no_descent import DroneNoDescent
@@ -68,10 +66,11 @@ class DroneModelEstimator(DroneNoDescent):
         for i in range(self.probab_map.shape[0]):
             for j in range(self.probab_map.shape[1]):
                 coord = self.indices_to_coordinates((i, j))
-                distance = np.sqrt((self.x - coord[0])**2 + (self.y - coord[1])**2)
+                distance = np.sqrt((self.x - coord[0]) ** 2 + (self.y - coord[1]) ** 2)
                 expected_distance = self.signal_to_distance(self.curr_signal)
                 # Update the probability map with Gaussian-like probability based on the distance difference
-                self.probab_map[i, j] += np.exp(-((distance - expected_distance)**2) / (2 * (expected_distance / 2)**2))
+                self.probab_map[i, j] += np.exp(
+                    -((distance - expected_distance) ** 2) / (2 * (expected_distance / 2) ** 2))
 
         # Find the index with the highest probability
         max_prob_idx = np.unravel_index(np.argmax(self.probab_map, axis=None), self.probab_map.shape)
@@ -104,12 +103,15 @@ class DroneModelEstimator(DroneNoDescent):
             y1 = self.source_y + self.drone_size // 4
 
             if self.source_icon_id is None:
-                self.source_icon_id = self.canvas.create_oval(x0, y0, x1, y1, fill=("orange" if self.patrol_mode else "black"), outline=self.color, width=3)
+                self.source_icon_id = self.canvas.create_oval(x0, y0, x1, y1,
+                                                              fill=("orange" if self.patrol_mode else "black"),
+                                                              outline=self.color, width=3)
 
             self.canvas.coords(self.source_icon_id, x0, y0, x1, y1)
 
             if self.source_x is not None and self.source_y is not None:
                 if self.line_id is None:
-                    self.line_id = self.canvas.create_line(self.source_x, self.source_y, self.x, self.y, fill="white", width=0.5)
+                    self.line_id = self.canvas.create_line(self.source_x, self.source_y, self.x, self.y, fill="white",
+                                                           width=0.5)
                 else:
                     self.canvas.coords(self.line_id, self.source_x, self.source_y, self.x, self.y)

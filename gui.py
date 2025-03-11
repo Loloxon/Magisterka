@@ -1,38 +1,29 @@
 import threading
-import time
 import tkinter as tk
-from collections import defaultdict
 from time import sleep
 
-from tabulate import tabulate
-
-from drones.drone_no_descent import DroneNoDescent
 from map import Map
 from utils import plot_scores
 
 
 class GUI:
-    def __init__(self, master, grid_matrix, square_size, drones, max_value, iterations, refresh_interval,
-                 save_to_file_interval, possible_params):
+    def __init__(self, master, grid_matrix, drones, max_value, conf):
+        self.conf = conf
+
         self.master = master
-        self.master.title("Simple GUI with Squares")
+        self.master.title("Simple GUI")
 
-        self.square_size = square_size
-        self.iterations = iterations
+        self.cell_size = conf.cell_size
+        self.iterations = conf.iterations
 
-        # self.signal_sums = None
-        # self.drones_probab_cnt = None
-        # self.winners = None
-        # self.scores = {drone: 0 for drone in drones}
-        self.possible_params = possible_params
+        self.drones_parameters = conf.drones_parameters
 
-        self.refresh_interval = refresh_interval
-        self.save_to_file_interval = save_to_file_interval
-        print("Square size:", self.square_size)
+        self.refresh_interval = conf.refresh_interval
+        self.save_to_file_interval = conf.save_to_file_interval
 
         self.canvas = tk.Canvas(self.master,
-                                width=len(grid_matrix[0]) * self.square_size,
-                                height=len(grid_matrix) * self.square_size)
+                                width=len(grid_matrix[0]) * self.cell_size,
+                                height=len(grid_matrix) * self.cell_size)
         self.canvas.grid(row=0, column=0)
 
         self.drones_released = False
@@ -49,7 +40,7 @@ class GUI:
 
         self.grid_matrix = grid_matrix
 
-        self.map = Map(self.canvas, grid_matrix, self.square_size, max_value)
+        self.map = Map(self.canvas, grid_matrix, self.cell_size, max_value)
         self.map.draw_grid()
 
         self.drones = drones
@@ -59,9 +50,12 @@ class GUI:
 
         self.prepare_file()
 
+    def run(self):
         drones_movement_thread = threading.Thread(target=self.move_drones)
         drones_movement_thread.daemon = True
         drones_movement_thread.start()
+
+        self.master.mainloop()
 
     def drones_control_btn_clicked(self):
         if self.drones_released:
@@ -89,15 +83,15 @@ class GUI:
 
     def plots_btn_clicked(self):
         print("Drawing plots!")
-        plot_scores("log_avg_max_sig.txt", "Average max signal")
-        plot_scores("log_max_count.txt", "Winners")
-        plot_scores("log_avg_current_sig.txt", "Average current signal")
+        plot_scores(self.conf.log_avg_max_sig, "Average max signal")
+        plot_scores(self.conf.log_max_count, "Winners")
+        plot_scores(self.conf.log_avg_current_sig, "Average current signal")
 
     def prepare_file(self):
-        for file_name in ['log_avg_max_sig.txt', 'log_max_count.txt', 'log_avg_current_sig.txt']:
+        for file_name in [self.conf.log_avg_max_sig, self.conf.log_max_count, self.conf.log_avg_current_sig]:
             with open(file_name, 'w') as file:
                 file.write(";")
-                for _, params in self.possible_params.items():
+                for _, params in enumerate(self.drones_parameters):
                     name = params[0]
                     if name == "DroneNoDescent":
                         info = params[2]
@@ -113,14 +107,14 @@ class GUI:
                 file.write("\n")
 
     def save_to_file(self, iteration_no):
-        with open('log_avg_max_sig.txt', 'a') as file:
+        with open(self.conf.log_avg_max_sig, 'a') as file:
             file.write(str(iteration_no) + ";")
-        with open('log_max_count.txt', 'a') as file:
+        with open(self.conf.log_max_count, 'a') as file:
             file.write(str(iteration_no) + ";")
-        with open('log_avg_current_sig.txt', 'a') as file:
+        with open(self.conf.log_avg_current_sig, 'a') as file:
             file.write(str(iteration_no) + ";")
 
-        for params_id, params in self.possible_params.items():
+        for params_id, params in enumerate(self.drones_parameters):
             summed_max = 0
             summed_curr = 0
             max_visited = 0
@@ -133,18 +127,18 @@ class GUI:
                     if drone.max_signal == self.map.max_value:
                         max_visited += 1
 
-            with open('log_avg_max_sig.txt', 'a') as file:
-                file.write(str((summed_max / no)/self.map.max_value) + ";")
-            with open('log_max_count.txt', 'a') as file:
-                file.write(str(max_visited/no) + ";")
-            with open('log_avg_current_sig.txt', 'a') as file:
-                file.write(str((summed_curr / no)/self.map.max_value) + ";")
+            with open(self.conf.log_avg_max_sig, 'a') as file:
+                file.write(str((summed_max / no) / self.map.max_value) + ";")
+            with open(self.conf.log_max_count, 'a') as file:
+                file.write(str(max_visited / no) + ";")
+            with open(self.conf.log_avg_current_sig, 'a') as file:
+                file.write(str((summed_curr / no) / self.map.max_value) + ";")
 
-        with open('log_avg_max_sig.txt', 'a') as file:
+        with open(self.conf.log_avg_max_sig, 'a') as file:
             file.write("\n")
-        with open('log_max_count.txt', 'a') as file:
+        with open(self.conf.log_max_count, 'a') as file:
             file.write("\n")
-        with open('log_avg_current_sig.txt', 'a') as file:
+        with open(self.conf.log_avg_current_sig, 'a') as file:
             file.write("\n")
 
     def move_drones(self):

@@ -1,10 +1,11 @@
 import random
 
-from drone import DroneInterface
+from drone_interface import DroneInterface
 
 
 class DroneNoDescent(DroneInterface):
-    def __init__(self, starting_position, color="black", descent_probab=0.05, ignore_value_step_num=8, params_id=-1, id=-1):
+    def __init__(self, starting_position, color="black", descent_probab=0.05, ignore_value_step_num=8, params_id=-1,
+                 id=-1):
         super().__init__(starting_position, color=color, params_id=params_id, id=id)
         self.distance = None
         self.direction = None
@@ -71,7 +72,6 @@ class DroneNoDescent(DroneInterface):
         else:
             self.distance -= 1
         if self.distance == 0:
-
             self.need_movement_orders = True
 
     def create_movement_orders(self, patrol):
@@ -108,6 +108,8 @@ class DroneNoDescent(DroneInterface):
             y1 = self.y + self.drone_size // 2
 
             if self.rectangle_id is None:
-                self.rectangle_id = self.canvas.create_oval(x0, y0, x1, y1, fill="black" if self.patrol_mode else "white", outline=self.color, width=3)
+                self.rectangle_id = self.canvas.create_oval(x0, y0, x1, y1,
+                                                            fill="black" if self.patrol_mode else "white",
+                                                            outline=self.color, width=3)
 
             self.canvas.coords(self.rectangle_id, x0, y0, x1, y1)

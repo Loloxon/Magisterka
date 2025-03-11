@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from PIL import Image
-from cycler import cycler
 from matplotlib.ticker import FuncFormatter
 from scipy.signal import convolve2d
 
@@ -99,36 +98,6 @@ def preprocess(file_path, cells_number, total_size=None, to_file=None):
     matrix_zeroed[::step, ::step] = reshaped_rounded_mat[::step, ::step]
     display_matrix(matrix_zeroed)
 
-    # nonzero_indices = np.nonzero(matrix_zeroed)
-    # nonzero_coords = np.transpose(nonzero_indices)
-    # #
-    # # # Generate coordinates for all indices
-    # all_indices = np.indices(matrix_zeroed.shape).reshape(2, -1).T
-    # #
-    # # # Interpolate using linear interpolation
-    # interpolated_values = griddata(nonzero_coords, matrix_zeroed[nonzero_indices], all_indices, method='linear', fill_value=0)
-    # #
-    # interpolated_array = interpolated_values.reshape(matrix_zeroed.shape)
-    #
-    # display_matrix(interpolated_array)
-    # interpolated_values = griddata(nonzero_coords, matrix_zeroed[nonzero_indices], all_indices, method='nearest', fill_value=0)
-    # #
-    # interpolated_array = interpolated_values.reshape(matrix_zeroed.shape)
-    #
-    # display_matrix(interpolated_array)
-    # interpolated_values = griddata(nonzero_coords, matrix_zeroed[nonzero_indices], all_indices, method='cubic', fill_value=0)
-    # #
-    # interpolated_array = interpolated_values.reshape(matrix_zeroed.shape)
-    # display_matrix(interpolated_array)
-
-    # # Interpolate using polynomial interpolation of 5th degree
-    # interp_func = interp2d(nonzero_indices[0], nonzero_indices[1], matrix_zeroed[nonzero_indices], kind='quintic')
-    # interpolated_values = interp_func(all_indices[:, 0], all_indices[:, 1])
-    #
-    # # Reshape interpolated values to original shape
-    # interpolated_array = interpolated_values.reshape(matrix_zeroed.shape)
-    # display_matrix(interpolated_array)
-
     kernel_size = max(1, cells_number // 17)
     convolved_arr = convolve2d(matrix_zeroed, gaussian_kernel(kernel_size, 3), mode='same')
     # convolved_arr = convolve2d(matrix_remapped, gaussian_kernel(50, 1), mode='same')
@@ -220,6 +189,7 @@ def distance(point1, point2):
 def area(point1, point2):
     return abs(point1[0] - point2[0]) * abs(point1[1] - point2[1])
 
+
 def remove_angle_brackets_content(text):
     # Use regex to find and remove everything between < and >
     result = re.sub(r'<.*?>', '', text)
@@ -236,7 +206,8 @@ def plot_scores(filename, values_name):
     # plt.rc('axes', prop_cycle=linestyle_cycler)
 
     for i, column in enumerate(df_filtered.columns):
-        plt.plot(df_filtered.index, df_filtered[column], label=remove_angle_brackets_content(column), linestyle=linestyles[i%(len(linestyles))])
+        plt.plot(df_filtered.index, df_filtered[column], label=remove_angle_brackets_content(column),
+                 linestyle=linestyles[i % (len(linestyles))])
 
     plt.xlabel("Iterations")
     plt.ylabel(values_name)

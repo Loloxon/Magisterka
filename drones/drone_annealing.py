@@ -1,12 +1,11 @@
 import math
-import random
 
-from drone import DroneInterface
 from drone_no_descent import DroneNoDescent
 
 
 class DroneAnnealing(DroneNoDescent):
-    def __init__(self, starting_position, start_temp, temp_multiplier, epoch_size, color="black", ignore_value_step_num=8, params_id=-1, id=-1):
+    def __init__(self, starting_position, start_temp, temp_multiplier, epoch_size, color="black",
+                 ignore_value_step_num=8, params_id=-1, id=-1):
         super().__init__(starting_position, color=color, ignore_value_step_num=ignore_value_step_num,
                          params_id=params_id, id=id)
         self.epoch_size = epoch_size
@@ -50,4 +49,3 @@ class DroneAnnealing(DroneNoDescent):
         self.round_cnt += 1
         if self.round_cnt == self.epoch_size:
             self.temp *= self.temp_multiplier
-

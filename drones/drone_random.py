@@ -1,6 +1,6 @@
 import random
 
-from drone import DroneInterface
+from drone_interface import DroneInterface
 
 
 class DroneRandom(DroneInterface):
