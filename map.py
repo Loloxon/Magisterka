@@ -50,4 +50,5 @@ class Map:
         return round(nominator / denominator, 5)
 
     def is_in_map(self, drone):
-        return 0 <= drone.x <= self.matrix_length * self.square_size and 0 <= drone.y <= self.matrix_height * self.square_size
+        return (self.square_size <= drone.x <= self.matrix_length * self.square_size
+                and self.square_size <= drone.y <= self.matrix_height * self.square_size)

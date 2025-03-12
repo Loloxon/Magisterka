@@ -1,3 +1,4 @@
+from tqdm import tqdm
 import threading
 import tkinter as tk
 from time import sleep
@@ -142,23 +143,18 @@ class GUI:
             file.write("\n")
 
     def move_drones(self):
-        iterations = self.iterations
+        for iteration in tqdm(range(self.iterations)):
+            while not self.drones_released:
+                sleep(0.0001)
 
-        while iterations != 0:
-            sleep(0.0001)
-            while self.drones_released and iterations != 0:
-                sleep(0.00001)
+            for drone in self.drones:
+                drone.do_move()
+                if iteration % self.refresh_interval == 0:
+                    drone.draw()
 
-                for drone in self.drones:
-                    drone.do_move()
-                    if iterations % self.refresh_interval == 0:
-                        drone.draw()
+            if iteration % self.save_to_file_interval == 0:
+                self.save_to_file(iteration)
 
-                print(self.iterations - iterations, end=":\n")
-
-                if iterations % self.save_to_file_interval == 0:
-                    self.save_to_file(self.iterations - iterations)
-                iterations -= 1
 
         self.drones_released = True
         self.drones_control_btn.config(text="Drones are done!")

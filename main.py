@@ -1,4 +1,5 @@
 import tkinter as tk
+import time
 
 import numpy as np
 
@@ -59,24 +60,23 @@ def initialize_drones(conf: Conf):
 
 if __name__ == "__main__":
     conf = Conf()
-
     root = tk.Tk()
 
-    file_name = "góry"
-    # utils.preprocess("assets/original/" + file_name + ".tiff", conf.cells_number, conf.image_size,
-    #                  "assets/processed/" + file_name + ".csv")
-    print("Map processed")
-    grid_matrix = utils.load_matrix("assets/processed/" + file_name + ".csv")
+    start = time.time()
+    utils.preprocess("assets/original/" + conf.map_name + ".tiff", conf.cells_number, conf.image_size,
+                     "assets/processed/" + conf.map_name + ".csv", False)
+    print(f"Preparing map took: {time.time()-start:.4f}[s]")
 
-    # max_value, source_point, signal_func = MainClass.analyze_map(grid_matrix)
-    # max_value, source_point, distance_from_signal = MainClass.analyze_map_strength(grid_matrix, map_size)
+    start = time.time()
+    grid_matrix = utils.load_matrix("assets/processed/" + conf.map_name + ".csv")
+    print(f"Loading matrix took: {time.time()-start:.4f}[s]")
 
-    # ..
-
+    start = time.time()
     drones = initialize_drones(conf)
+    print(f"Initializing drones took: {time.time()-start:.4f}[s]")
+
 
     max_value = np.max(grid_matrix)
-    print(max_value)
-
+    print("Max value on whole map:", max_value)
     gui = GUI(root, grid_matrix, drones, max_value, conf)
     gui.run()

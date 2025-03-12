@@ -19,9 +19,12 @@ class DroneRandom(DroneInterface):
         if self.need_movement_orders:
             self.d_x, self.d_y = self.create_movement_orders()
 
-        self.move(self.d_x, self.d_y)
-        self.distance -= self.step_size
-        if self.distance == 0:
+        if self.move(self.d_x, self.d_y):
+            self.distance -= self.step_size
+            if self.distance == 0:
+                self.need_movement_orders = True
+        else:
+            self.move(-self.d_x, -self.d_y)
             self.need_movement_orders = True
 
         self.max_signal = max(self.max_signal, self.curr_signal)

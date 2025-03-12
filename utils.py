@@ -10,7 +10,7 @@ from matplotlib.ticker import FuncFormatter
 from scipy.signal import convolve2d
 
 
-def preprocess(file_path, cells_number, total_size=None, to_file=None):
+def preprocess(file_path, cells_number, total_size=None, to_file=None, show_images=True):
     def tiff_to_matrix():
         img = Image.open(file_path)
         if img.mode != 'L':
@@ -70,18 +70,21 @@ def preprocess(file_path, cells_number, total_size=None, to_file=None):
         plt.show()
 
     basic_matrix = tiff_to_matrix()
-    print(basic_matrix.shape)
-    display_matrix(basic_matrix)
+    if show_images:
+        print(basic_matrix.shape)
+        display_matrix(basic_matrix)
 
     if total_size is None:
         total_size = max(len(basic_matrix), len(basic_matrix[0]))
 
     matrix_adjusted = adjust_dimensions(basic_matrix)
-    print(matrix_adjusted.shape)
-    display_matrix(matrix_adjusted)
+    if show_images:
+        print(matrix_adjusted.shape)
+        display_matrix(matrix_adjusted)
 
     matrix_remapped = remap(matrix_adjusted)
-    display_matrix(matrix_remapped)
+    if show_images:
+        display_matrix(matrix_remapped)
 
     reshaped_mat = matrix_remapped.reshape(
         cells_number, total_size // cells_number,
@@ -89,14 +92,17 @@ def preprocess(file_path, cells_number, total_size=None, to_file=None):
 
     reshaped_rounded_mat = np.round(reshaped_mat.mean(axis=(1, 3))).astype(int)
 
-    display_matrix(reshaped_rounded_mat)
+    if show_images:
+        display_matrix(reshaped_rounded_mat)
 
     matrix_zeroed = np.zeros_like(reshaped_rounded_mat)
     step = max(min(int(cells_number / total_size * 10), 3), 1)
-    print(reshaped_rounded_mat.shape)
-    print(matrix_zeroed.shape)
+    if show_images:
+        print(reshaped_rounded_mat.shape)
+        print(matrix_zeroed.shape)
     matrix_zeroed[::step, ::step] = reshaped_rounded_mat[::step, ::step]
-    display_matrix(matrix_zeroed)
+    if show_images:
+        display_matrix(matrix_zeroed)
 
     kernel_size = max(1, cells_number // 17)
     convolved_arr = convolve2d(matrix_zeroed, gaussian_kernel(kernel_size, 3), mode='same')
@@ -106,7 +112,8 @@ def preprocess(file_path, cells_number, total_size=None, to_file=None):
         cells_number, 1)
 
     result_1 = np.round(reshaped_mat.mean(axis=(1, 3))).astype(int)
-    display_matrix(result_1)
+    if show_images:
+        display_matrix(result_1)
 
     kernel_size2 = max(1, cells_number // 50)
     convolved_arr_2 = convolve2d(result_1, gaussian_kernel(kernel_size2, 2), mode='same')
@@ -116,7 +123,9 @@ def preprocess(file_path, cells_number, total_size=None, to_file=None):
         cells_number, 1)
 
     result_2 = np.round(reshaped_mat_2.mean(axis=(1, 3))).astype(int)
-    display_matrix(result_2)
+
+    if show_images:
+        display_matrix(result_2)
 
     if to_file:
         np.savetxt(to_file, result_2, delimiter=",")
