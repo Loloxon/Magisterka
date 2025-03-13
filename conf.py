@@ -12,7 +12,7 @@ class Conf:
 
         self.drones_starting_margin = self.map_size // 20
         self.drones_starting_per_side = 10
-        self.drones_starting_per_point = 1
+        self.drones_starting_per_point = 4
 
         self.iterations = 10000
         self.refresh_interval = 10
@@ -80,7 +80,7 @@ def fill_drones_parameters():
 def fill_drone_hives_parameters():
     drone_hives_parameters = []
 
-    # drone_hives_parameters.append(("DroneHiveRandomTaboo", "green"))
-    drone_hives_parameters.append(("DroneHiveTry1", "yellow"))
+    drone_hives_parameters.append(("DroneHiveRandomTaboo", "green"))
+    # drone_hives_parameters.append(("DroneHiveTry1", "yellow"))
 
     return drone_hives_parameters

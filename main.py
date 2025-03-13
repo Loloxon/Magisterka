@@ -19,8 +19,9 @@ def initialize_drones(conf: Conf):
 
     for params_id, params in enumerate(conf.drones_parameters):
         for id in range(conf.drones_starting_per_point):
-            for i in range(conf.drones_starting_margin * 2, conf.map_size,
-                           conf.map_size // conf.drones_starting_per_side):
+            for i in range(conf.drones_starting_margin * 2, conf.map_size - conf.drones_starting_margin * 2 + 1,
+                           (conf.map_size - conf.drones_starting_margin * 4) // (
+                                   conf.drones_starting_per_side - 1)):
                 for starting_position in [(i, conf.drones_starting_margin),
                                           (i, conf.map_size - conf.drones_starting_margin),
                                           (conf.drones_starting_margin, i),
@@ -82,10 +83,10 @@ def initialize_drone_hives(conf: Conf):
                                                             conf=conf))
                 case "DroneHiveTry1":
                     drone_hives.append(DroneHiveTry1(copy.deepcopy(starting_positions),
-                                                            color=params[1],
-                                                            params_id=params_id,
-                                                            id=id,
-                                                            conf=conf))
+                                                     color=params[1],
+                                                     params_id=params_id,
+                                                     id=id,
+                                                     conf=conf))
     return drone_hives
 
 
@@ -93,10 +94,10 @@ if __name__ == "__main__":
     conf = Conf()
     root = tk.Tk()
 
-    start = time.time()
-    utils.preprocess("assets/original/" + conf.map_name + ".tiff", conf.cells_number, conf.image_size,
-                     "assets/processed/" + conf.map_name + ".csv", False)
-    print(f"Preparing map took: {time.time() - start:.4f}[s]")
+    # start = time.time()
+    # utils.preprocess("assets/original/" + conf.map_name + ".tiff", conf.cells_number, conf.image_size,
+    #                  "assets/processed/" + conf.map_name + ".csv", False)
+    # print(f"Preparing map took: {time.time() - start:.4f}[s]")
 
     start = time.time()
     grid_matrix = utils.load_matrix("assets/processed/" + conf.map_name + ".csv")

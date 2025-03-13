@@ -5,12 +5,14 @@ from drone_random import DroneRandom
 
 class DroneHiveRandomTaboo:
     def __init__(self, starting_positions: list, color="black", params_id=-1, id=-1, conf=None):
+        self.divider = 3
+
         self.children = [DroneRandom(starting_position, color, params_id, id * len(starting_positions) + i)
                          for i, starting_position in enumerate(starting_positions)]
 
         # self.already_visited: list[tuple] = [(starting_position, i) for i, starting_position in
         #                                      enumerate(starting_positions)]
-        self.already_visited: list[tuple] = [(starting_position[0]//3, starting_position[0]//3) for starting_position in
+        self.already_visited: list[tuple] = [(starting_position[0]//self.divider, starting_position[0]//self.divider) for starting_position in
                                              starting_positions]
 
         self.color = color
@@ -39,7 +41,7 @@ class DroneHiveRandomTaboo:
             visited = True
             while counter < 4 and visited:
                 visited = False
-                if (child.get_position()[0]//3, child.get_position()[1]//3) in self.already_visited:
+                if (child.get_position()[0]//self.divider, child.get_position()[1]//self.divider) in self.already_visited:
                     visited = True
 
                 # for visited_place, id in self.already_visited:
@@ -55,7 +57,7 @@ class DroneHiveRandomTaboo:
             curr_signal_tmp += child.curr_signal
 
             # self.already_visited.append((child.get_position(), i))
-            self.already_visited.append((child.get_position()[0]//3, child.get_position()[1]//3))
+            self.already_visited.append((child.get_position()[0]//self.divider, child.get_position()[1]//self.divider))
 
         self.max_signal = max_signal_tmp / len(self.children)
         self.curr_signal = curr_signal_tmp / len(self.children)
