@@ -29,6 +29,9 @@ class DroneRandom(DroneInterface):
 
         self.max_signal = max(self.max_signal, self.curr_signal)
 
+    def target_position(self):
+        return self.x + self.d_x, self.y + self.d_y
+
     def create_movement_orders(self):
         self.need_movement_orders = False
         self.orientation = random.randint(0, 1)

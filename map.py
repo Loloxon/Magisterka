@@ -2,7 +2,7 @@ from utils import *
 
 
 class Map:
-    def __init__(self, canvas, grid_matrix, square_size, max_value):
+    def __init__(self, canvas, grid_matrix, square_size, max_signal):
         self.canvas = canvas
         self.grid_matrix = grid_matrix
         self.matrix_height = len(grid_matrix) - 1
@@ -10,7 +10,7 @@ class Map:
         self.square_size = square_size
         self.rendered_map = [[None for _ in range(len(grid_matrix[0]))] for __ in range(len(grid_matrix))]
         self.curtain = None
-        self.max_value = max_value
+        self.max_signal = max_signal
 
     def draw_grid(self):
         for i in range(len(self.grid_matrix)):

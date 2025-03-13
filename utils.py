@@ -205,7 +205,7 @@ def remove_angle_brackets_content(text):
     return result
 
 
-def plot_scores(filename, values_name):
+def plot_scores(filename, values_name, drones_parameters, drone_hives_parameters):
     df = pd.read_csv(filename, sep=";", index_col=0)
     plt.figure(figsize=(10, 10))
 
@@ -215,8 +215,15 @@ def plot_scores(filename, values_name):
     # plt.rc('axes', prop_cycle=linestyle_cycler)
 
     for i, column in enumerate(df_filtered.columns):
-        plt.plot(df_filtered.index, df_filtered[column], label=remove_angle_brackets_content(column),
-                 linestyle=linestyles[i % (len(linestyles))])
+        if i < len(drones_parameters):
+            plt.plot(df_filtered.index, df_filtered[column], label=remove_angle_brackets_content(column),
+                     linestyle=linestyles[i % (len(linestyles))], color=drones_parameters[i][1])
+        elif i < len(drone_hives_parameters):
+            plt.plot(df_filtered.index, df_filtered[column], label=remove_angle_brackets_content(column),
+                     linestyle=linestyles[i % (len(linestyles))], color=drone_hives_parameters[i][1])
+        else:
+            plt.plot(df_filtered.index, df_filtered[column], label=remove_angle_brackets_content(column),
+                     linestyle=linestyles[i % (len(linestyles))], color="black")
 
     plt.xlabel("Iterations")
     plt.ylabel(values_name)

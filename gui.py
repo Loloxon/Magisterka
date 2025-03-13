@@ -8,7 +8,7 @@ from utils import plot_scores
 
 
 class GUI:
-    def __init__(self, master, grid_matrix, drones, max_value, conf):
+    def __init__(self, master, grid_matrix, drones, drone_hives, max_signal, conf):
         self.conf = conf
 
         self.master = master
@@ -18,6 +18,7 @@ class GUI:
         self.iterations = conf.iterations
 
         self.drones_parameters = conf.drones_parameters
+        self.drone_hives_parameters = conf.drone_hives_parameters
 
         self.refresh_interval = conf.refresh_interval
         self.save_to_file_interval = conf.save_to_file_interval
@@ -41,13 +42,18 @@ class GUI:
 
         self.grid_matrix = grid_matrix
 
-        self.map = Map(self.canvas, grid_matrix, self.cell_size, max_value)
+        self.map = Map(self.canvas, grid_matrix, self.cell_size, max_signal)
         self.map.draw_grid()
 
         self.drones = drones
         for drone in self.drones:
             drone.set_values(self.canvas, self.map, self, master)
             drone.draw()
+
+        self.drone_hives = drone_hives
+        for drone_hive in self.drone_hives:
+            drone_hive.set_values(self.canvas, self.map, self, master)
+            drone_hive.draw()
 
         self.prepare_file()
 
@@ -74,6 +80,8 @@ class GUI:
             self.canvas.delete(self.map.curtain)
             for drone in self.drones:
                 drone.draw()
+            for drone_hive in self.drone_hives:
+                drone_hive.draw()
             print("Simulation shown!")
             self.hide_btn.config(text="Hide simulation")
         else:
@@ -84,9 +92,9 @@ class GUI:
 
     def plots_btn_clicked(self):
         print("Drawing plots!")
-        plot_scores(self.conf.log_avg_max_sig, "Average max signal")
-        plot_scores(self.conf.log_max_count, "Winners")
-        plot_scores(self.conf.log_avg_current_sig, "Average current signal")
+        plot_scores(self.conf.log_avg_max_sig, "Average max signal", self.drones_parameters, self.drone_hives_parameters)
+        plot_scores(self.conf.log_max_count, "Winners", self.drones_parameters, self.drone_hives_parameters)
+        plot_scores(self.conf.log_avg_current_sig, "Average current signal", self.drones_parameters, self.drone_hives_parameters)
 
     def prepare_file(self):
         for file_name in [self.conf.log_avg_max_sig, self.conf.log_max_count, self.conf.log_avg_current_sig]:
@@ -102,6 +110,16 @@ class GUI:
                         info = params[3]
                     elif name == "DroneAnnealing":
                         info = params[2:5]
+                    else:
+                        info = params[1:]
+                    file.write(str(name) + ": " + str(info) + ";")
+
+                for _, params in enumerate(self.drone_hives_parameters):
+                    name = params[0]
+                    if name == "DroneHiveRandomTaboo":
+                        info = ""
+                    elif name == "DroneHiveTry1":
+                        info = ""
                     else:
                         info = params[1:]
                     file.write(str(name) + ": " + str(info) + ";")
@@ -125,15 +143,35 @@ class GUI:
                     summed_max += drone.max_signal
                     summed_curr += drone.curr_signal
                     no += 1
-                    if drone.max_signal == self.map.max_value:
+                    if drone.max_signal == self.map.max_signal:
                         max_visited += 1
 
             with open(self.conf.log_avg_max_sig, 'a') as file:
-                file.write(str((summed_max / no) / self.map.max_value) + ";")
+                file.write(str((summed_max / no) / self.map.max_signal) + ";")
             with open(self.conf.log_max_count, 'a') as file:
                 file.write(str(max_visited / no) + ";")
             with open(self.conf.log_avg_current_sig, 'a') as file:
-                file.write(str((summed_curr / no) / self.map.max_value) + ";")
+                file.write(str((summed_curr / no) / self.map.max_signal) + ";")
+
+        for params_id, params in enumerate(self.drone_hives_parameters):
+            summed_max = 0
+            summed_curr = 0
+            max_visited = 0
+            no = 0
+            for drone_hive in self.drone_hives:
+                if drone_hive.params_id == params_id:
+                    summed_max += drone_hive.max_signal
+                    summed_curr += drone_hive.curr_signal
+                    no += 1
+                    if drone_hive.max_signal == self.map.max_signal:
+                        max_visited += 1
+
+            with open(self.conf.log_avg_max_sig, 'a') as file:
+                file.write(str((summed_max / no) / self.map.max_signal) + ";")
+            with open(self.conf.log_max_count, 'a') as file:
+                file.write(str(max_visited / no) + ";")
+            with open(self.conf.log_avg_current_sig, 'a') as file:
+                file.write(str((summed_curr / no) / self.map.max_signal) + ";")
 
         with open(self.conf.log_avg_max_sig, 'a') as file:
             file.write("\n")
@@ -151,6 +189,11 @@ class GUI:
                 drone.do_move()
                 if iteration % self.refresh_interval == 0:
                     drone.draw()
+
+            for drone_hive in self.drone_hives:
+                drone_hive.do_move()
+                if iteration % self.refresh_interval == 0:
+                    drone_hive.draw()
 
             if iteration % self.save_to_file_interval == 0:
                 self.save_to_file(iteration)
