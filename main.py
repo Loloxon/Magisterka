@@ -6,8 +6,9 @@ import numpy as np
 
 import utils
 from conf import Conf
-from drone_hive_random_taboo import DroneHiveRandomTaboo
-from drone_hive_try1 import DroneHiveTry1
+from drone_hives.drone_hive_random_taboo import DroneHiveRandomTaboo
+from drone_hives.drone_hive_try1 import DroneHiveTry1
+from drone_hives.drone_hive_GWO import DroneHiveGWO
 from drones.drone_annealing import DroneAnnealing
 from drones.drone_no_descent import DroneNoDescent
 from drones.drone_random import DroneRandom
@@ -83,6 +84,12 @@ def initialize_drone_hives(conf: Conf):
                                                             conf=conf))
                 case "DroneHiveTry1":
                     drone_hives.append(DroneHiveTry1(copy.deepcopy(starting_positions),
+                                                     color=params[1],
+                                                     params_id=params_id,
+                                                     id=id,
+                                                     conf=conf))
+                case "DroneHiveGWO":
+                    drone_hives.append(DroneHiveGWO(copy.deepcopy(starting_positions),
                                                      color=params[1],
                                                      params_id=params_id,
                                                      id=id,

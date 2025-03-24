@@ -11,8 +11,8 @@ class Conf:
         self.cell_size = self.map_size // self.cells_number
 
         self.drones_starting_margin = self.map_size // 20
-        self.drones_starting_per_side = 10
-        self.drones_starting_per_point = 4
+        self.drones_starting_per_side = 3
+        self.drones_starting_per_point = 1
 
         self.iterations = 10000
         self.refresh_interval = 10
@@ -32,7 +32,7 @@ class Conf:
 def fill_drones_parameters():
     drones_parameters = []
 
-    drones_parameters.append(("DroneRandom", "purple"))
+    # drones_parameters.append(("DroneRandom", "purple"))
     # drones_parameters.append(("DroneAnnealing", "blue", 1, 0.4, 1))
     # drones_parameters.append(("DroneNoDescent", "orange", 0.75))
 
@@ -80,7 +80,8 @@ def fill_drones_parameters():
 def fill_drone_hives_parameters():
     drone_hives_parameters = []
 
-    drone_hives_parameters.append(("DroneHiveRandomTaboo", "green"))
+    # drone_hives_parameters.append(("DroneHiveRandomTaboo", "green"))
+    drone_hives_parameters.append(("DroneHiveGWO", "grey"))
     # drone_hives_parameters.append(("DroneHiveTry1", "yellow"))
 
     return drone_hives_parameters
