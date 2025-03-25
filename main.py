@@ -101,10 +101,10 @@ if __name__ == "__main__":
     conf = Conf()
     root = tk.Tk()
 
-    # start = time.time()
-    # utils.preprocess("assets/original/" + conf.map_name + ".tiff", conf.cells_number, conf.image_size,
-    #                  "assets/processed/" + conf.map_name + ".csv", False)
-    # print(f"Preparing map took: {time.time() - start:.4f}[s]")
+    start = time.time()
+    utils.preprocess("assets/original/" + conf.map_name + ".tiff", conf.cells_number, conf.image_size,
+                     "assets/processed/" + conf.map_name + ".csv", True, conf.map_start_coords)
+    print(f"Preparing map took: {time.time() - start:.4f}[s]")
 
     start = time.time()
     grid_matrix = utils.load_matrix("assets/processed/" + conf.map_name + ".csv")

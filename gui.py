@@ -191,7 +191,7 @@ class GUI:
                     drone.draw()
 
             for drone_hive in self.drone_hives:
-                drone_hive.do_move()
+                drone_hive.do_move(iteration, self.iterations)
                 if iteration % self.refresh_interval == 0:
                     drone_hive.draw()
 

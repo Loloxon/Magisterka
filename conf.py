@@ -1,10 +1,15 @@
+import random
+
+
 class Conf:
     def __init__(self):
         self.map_name = "góry"
+        # self.map_name = "hell"
 
-        self.image_size = 1000
-        self.cells_number = 50
-        self.map_size = 750
+        self.image_size = 20000
+        self.cells_number = 1000
+        self.map_size = 1000
+        self.map_start_coords = (random.randint(2000, 18000), random.randint(2000, 18000))
 
         self.visited_area_radius = 5
 

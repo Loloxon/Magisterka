@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 
 from drone_GWO import DroneGWO
@@ -9,6 +11,9 @@ class DroneHiveGWO:
 
         self.children = [DroneGWO(starting_position, color, params_id, id * len(starting_positions) + i)
                          for i, starting_position in enumerate(starting_positions)]
+        # self.children = [DroneGWO((random.randint(1, conf.map_size-1), random.randint(1, conf.map_size)),
+        #                           color, params_id, id * len(starting_positions) + i)
+        #                  for i, starting_position in enumerate(starting_positions)]
 
         # self.already_visited: list[tuple] = [(starting_position, i) for i, starting_position in
         #                                      enumerate(starting_positions)]
@@ -26,7 +31,9 @@ class DroneHiveGWO:
         assert conf is not None
         self.conf = conf
 
-        self.alpha, self.beta, self.delta = (0, 0), (0, 0), (0, 0)
+        self.alpha, self.beta, self.delta = ((self.conf.map_size/2, self.conf.map_size/2),
+                                             (self.conf.map_size/2, self.conf.map_size/2),
+                                             (self.conf.map_size/2, self.conf.map_size/2))
         self.alpha_score, self.beta_score, self.delta_score = 0, 0, 0
 
     def set_values(self, canvas, map, GUI, master):
@@ -37,14 +44,13 @@ class DroneHiveGWO:
         for child in self.children:
             child.draw()
 
-    def do_move(self):
+    def do_move(self,t, max_iter):
 
         for i, child in enumerate(self.children):
             score = child.curr_signal
             if score is None:
-                score = 0.1
-
-            if score > self.alpha_score:
+                pass
+            elif score > self.alpha_score:
                 self.alpha_score, self.beta_score, self.delta_score = score, self.alpha_score, self.beta_score
                 self.alpha, self.beta, self.delta = (child.x, child.y), self.alpha, self.beta
             elif score > self.beta_score:
@@ -54,8 +60,8 @@ class DroneHiveGWO:
                 self.delta_score = score
                 self.delta = (child.x, child.y)
 
-        # a = 2 - t * (2 / max_iter)  # Zmniejszanie współczynnika eksploracji
-        a = 2
+        a = 2 - t * (2 / max_iter)  # Zmniejszanie współczynnika eksploracji
+        # a = 2
         for i, child in enumerate(self.children):
             A1, A2, A3 = 2 * a * np.random.rand(2) - a, 2 * a * np.random.rand(2) - a, 2 * a * np.random.rand(
                 2) - a
@@ -68,10 +74,23 @@ class DroneHiveGWO:
                           np.array(self.beta) - A2 * D_beta,
                           np.array(self.delta) - A3 * D_delta)
             new_pos = (X1 + X2 + X3) / 3  # Nowa pozycja wilka
-            print(new_pos)
-            child.x, child.y = new_pos[0], new_pos[1]
-
+            # print(child.x, child.y, new_pos, self.move_toward((child.x, child.y), new_pos))
+            # child.x, child.y = new_pos[0], new_pos[1]
+            child.x, child.y = self.move_toward((child.x, child.y), new_pos)
+            child.curr_signal = child.signal_received()
+            child.max_signal = max(child.max_signal, child.curr_signal)
+        # print()
         self.curr_signal = self.alpha_score
+
+    def move_toward(self, current, target):
+        x, y = current
+        a, b = target
+
+        # Determine the new position by moving at most 1 step in either direction
+        new_x = x + (1 if a > x else -1 if a < x else 0)
+        new_y = y + (1 if b > y else -1 if b < y else 0)
+
+        return (new_x, new_y)
 
         # if t % 10 == 0:
         #     print(f"Iteracja {t}: Najlepsze rozwiązanie {alpha} z wynikiem {self.alpha_score}")

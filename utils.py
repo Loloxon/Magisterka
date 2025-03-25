@@ -10,7 +10,7 @@ from matplotlib.ticker import FuncFormatter
 from scipy.signal import convolve2d
 
 
-def preprocess(file_path, cells_number, total_size=None, to_file=None, show_images=True):
+def preprocess(file_path, cells_number, total_size=None, to_file=None, show_images=True, map_start_coords=(0, 0)):
     def tiff_to_matrix():
         img = Image.open(file_path)
         if img.mode != 'L':
@@ -19,22 +19,37 @@ def preprocess(file_path, cells_number, total_size=None, to_file=None, show_imag
         return img_array
 
     def adjust_dimensions(matrix):
+        print(".\n", matrix.shape)
         zoomed_out = np.zeros((total_size, total_size))
-        if total_size >= max(len(basic_matrix), len(basic_matrix[0])):
-            start_row = (total_size - matrix.shape[0]) // 2
-            end_row = start_row + matrix.shape[0]
-            start_col = (total_size - matrix.shape[1]) // 2
-            end_col = start_col + matrix.shape[1]
 
-            zoomed_out[start_row:end_row, start_col:end_col] = matrix
-        else:
-            start_row = (matrix.shape[0] - total_size) // 2
-            end_row = start_row + total_size
-            start_col = (matrix.shape[1] - total_size) // 2
-            end_col = start_col + total_size
+        start_row, start_col = map_start_coords
+        end_row = min(start_row + matrix.shape[0], total_size)
+        end_col = min(start_col + matrix.shape[1], total_size)
 
-            zoomed_out = matrix[start_row:end_row, start_col:end_col]
+        zoomed_out[start_row:end_row, start_col:end_col] = matrix[:end_row - start_row, :end_col - start_col]
+
+        print(".\n", zoomed_out.shape)
         return zoomed_out
+
+    # def adjust_dimensions(matrix):
+    #     print(".\n", matrix.shape)
+    #     zoomed_out = np.zeros((total_size, total_size))
+    #     if total_size >= max(len(basic_matrix), len(basic_matrix[0])):
+    #         start_row = (total_size - matrix.shape[0]) // 2
+    #         end_row = start_row + matrix.shape[0]
+    #         start_col = (total_size - matrix.shape[1]) // 2
+    #         end_col = start_col + matrix.shape[1]
+    #
+    #         zoomed_out[start_row:end_row, start_col:end_col] = matrix
+    #     else:
+    #         start_row = (matrix.shape[0] - total_size) // 2
+    #         end_row = start_row + total_size
+    #         start_col = (matrix.shape[1] - total_size) // 2
+    #         end_col = start_col + total_size
+    #
+    #         zoomed_out = matrix[start_row:end_row, start_col:end_col]
+    #     print(".\n", zoomed_out.shape)
+    #     return zoomed_out
 
     def remap(matrix):
         counter = {}
