@@ -81,6 +81,7 @@ class DroneHiveGWO:
             child.max_signal = max(child.max_signal, child.curr_signal)
         # print()
         self.curr_signal = self.alpha_score
+        self.max_signal = max(self.max_signal, self.curr_signal)
 
     def move_toward(self, current, target):
         x, y = current

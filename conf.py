@@ -6,20 +6,20 @@ class Conf:
         self.map_name = "góry"
         # self.map_name = "hell"
 
-        self.image_size = 20000
-        self.cells_number = 1000
-        self.map_size = 1000
-        self.map_start_coords = (random.randint(2000, 18000), random.randint(2000, 18000))
+        self.image_size = 4000
+        self.cells_number = 200
+        self.map_size = 600
+        self.map_start_coords = (random.randint(200, 1800), random.randint(200, 1800))
 
         self.visited_area_radius = 5
 
         self.cell_size = self.map_size // self.cells_number
 
         self.drones_starting_margin = self.map_size // 20
-        self.drones_starting_per_side = 3
-        self.drones_starting_per_point = 1
+        self.drones_starting_per_side = 4
+        self.drones_starting_per_point = 5
 
-        self.iterations = 10000
+        self.iterations = 1000
         self.refresh_interval = 10
         self.save_to_file_interval = 5
 
@@ -38,7 +38,7 @@ def fill_drones_parameters():
     drones_parameters = []
 
     # drones_parameters.append(("DroneRandom", "purple"))
-    # drones_parameters.append(("DroneAnnealing", "blue", 1, 0.4, 1))
+    drones_parameters.append(("DroneAnnealing", "blue", 1, 0.4, 1))
     # drones_parameters.append(("DroneNoDescent", "orange", 0.75))
 
     # # descent_probabs = [0, 0.25, 0.5, 0.75, 0.85]
