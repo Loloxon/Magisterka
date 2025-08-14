@@ -12,18 +12,46 @@ class Map:
         self.curtain = None
         self.max_signal = max_signal
 
+    # def draw_grid(self):
+    #     for i in range(len(self.grid_matrix)):
+    #         for j in range(len(self.grid_matrix[0])):
+    #             x0 = j * self.square_size
+    #             y0 = i * self.square_size
+    #             x1 = x0 + self.square_size
+    #             y1 = y0 + self.square_size
+    #             color_value = self.grid_matrix[i][j]
+    #
+    #             fill_color = viridis_colormap(color_value, self.grid_matrix)
+    #
+    #             self.rendered_map[i][j] = self.canvas.create_rectangle(x0, y0, x1, y1, fill=fill_color, outline="")
+
     def draw_grid(self):
+        # Dictionary to group rectangles by color
+        color_groups = {}
+
+        # Precompute fill colors for all grid cells
         for i in range(len(self.grid_matrix)):
             for j in range(len(self.grid_matrix[0])):
+                color_value = self.grid_matrix[i][j]
+                fill_color = viridis_colormap(color_value, self.grid_matrix)
+
+                if fill_color not in color_groups:
+                    color_groups[fill_color] = []
+
+                # Calculate rectangle coordinates
                 x0 = j * self.square_size
                 y0 = i * self.square_size
                 x1 = x0 + self.square_size
                 y1 = y0 + self.square_size
-                color_value = self.grid_matrix[i][j]
 
-                fill_color = viridis_colormap(color_value, self.grid_matrix)
+                # Group rectangles by color
+                color_groups[fill_color].append((x0, y0, x1, y1))
 
-                self.rendered_map[i][j] = self.canvas.create_rectangle(x0, y0, x1, y1, fill=fill_color, outline="")
+        # Render rectangles in bulk for each color group
+        for fill_color, rectangles in color_groups.items():
+            for rect in rectangles:
+                x0, y0, x1, y1 = rect
+                self.canvas.create_rectangle(x0, y0, x1, y1, fill=fill_color, outline="")
 
     def hide_grid(self):
         self.curtain = self.canvas.create_rectangle(0, 0,

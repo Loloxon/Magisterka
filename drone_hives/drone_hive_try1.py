@@ -30,7 +30,8 @@ class DroneHiveTry1:
 
     def draw(self):
         for child in self.children:
-            child.draw()
+            if not self.conf.drones_hidden:
+                child.draw()
 
     def do_move(self):
         max_signal_tmp = 0

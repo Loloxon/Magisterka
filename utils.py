@@ -10,7 +10,7 @@ from matplotlib.ticker import FuncFormatter
 from scipy.signal import convolve2d
 
 
-def preprocess(file_path, cells_number, total_size=None, to_file=None, show_images=True, map_start_coords=(0, 0)):
+def preprocess(file_path, cells_number, image_size=None, to_file=None, show_images=True, map_start_coords_center=None):
     def tiff_to_matrix():
         img = Image.open(file_path)
         if img.mode != 'L':
@@ -18,13 +18,50 @@ def preprocess(file_path, cells_number, total_size=None, to_file=None, show_imag
         img_array = np.array(img)
         return img_array
 
+    def trim_matrix(matrix):
+        tmp = matrix[1:-2, 1:-2]
+
+        non_zero_rows = np.any(tmp != 0, axis=1)
+        non_zero_cols = np.any(tmp != 0, axis=0)
+
+        # Get the bounds for trimming
+        row_start, row_end = np.where(non_zero_rows)[0][[0, -1]]
+        col_start, col_end = np.where(non_zero_cols)[0][[0, -1]]
+
+        # Trim the matrix
+        trimmed_matrix = tmp[row_start:row_end + 1, col_start:col_end + 1]
+
+        return trimmed_matrix
+
+    def determinate_map_start_coords_center():
+        if map_start_coords_center is not None:
+            return map_start_coords_center
+        else:
+            # Default to the center of the image
+            return image_size // 2, image_size // 2
+
+    def create_map():
+        result_matrix = np.zeros((image_size, image_size))
+
+        center_row, center_col = map_start_coords_center
+        start_row = max(0, center_row - trimmed_matrix.shape[0] // 2)
+        start_col = max(0, center_col - trimmed_matrix.shape[1] // 2)
+        end_row = min(start_row + trimmed_matrix.shape[0], image_size)
+        end_col = min(start_col + trimmed_matrix.shape[1], image_size)
+
+        result_matrix[start_row:end_row, start_col:end_col] = trimmed_matrix[:end_row - start_row, :end_col - start_col]
+
+        return result_matrix
+
+
+
     def adjust_dimensions(matrix):
         print(".\n", matrix.shape)
-        zoomed_out = np.zeros((total_size, total_size))
+        zoomed_out = np.zeros((image_size, image_size))
 
-        start_row, start_col = map_start_coords
-        end_row = min(start_row + matrix.shape[0], total_size)
-        end_col = min(start_col + matrix.shape[1], total_size)
+        start_row, start_col = map_start_coords_center
+        end_row = min(start_row + matrix.shape[0], image_size)
+        end_col = min(start_col + matrix.shape[1], image_size)
 
         zoomed_out[start_row:end_row, start_col:end_col] = matrix[:end_row - start_row, :end_col - start_col]
 
@@ -33,19 +70,19 @@ def preprocess(file_path, cells_number, total_size=None, to_file=None, show_imag
 
     # def adjust_dimensions(matrix):
     #     print(".\n", matrix.shape)
-    #     zoomed_out = np.zeros((total_size, total_size))
-    #     if total_size >= max(len(basic_matrix), len(basic_matrix[0])):
-    #         start_row = (total_size - matrix.shape[0]) // 2
+    #     zoomed_out = np.zeros((image_size, image_size))
+    #     if image_size >= max(len(basic_matrix), len(basic_matrix[0])):
+    #         start_row = (image_size - matrix.shape[0]) // 2
     #         end_row = start_row + matrix.shape[0]
-    #         start_col = (total_size - matrix.shape[1]) // 2
+    #         start_col = (image_size - matrix.shape[1]) // 2
     #         end_col = start_col + matrix.shape[1]
     #
     #         zoomed_out[start_row:end_row, start_col:end_col] = matrix
     #     else:
-    #         start_row = (matrix.shape[0] - total_size) // 2
-    #         end_row = start_row + total_size
-    #         start_col = (matrix.shape[1] - total_size) // 2
-    #         end_col = start_col + total_size
+    #         start_row = (matrix.shape[0] - image_size) // 2
+    #         end_row = start_row + image_size
+    #         start_col = (matrix.shape[1] - image_size) // 2
+    #         end_col = start_col + image_size
     #
     #         zoomed_out = matrix[start_row:end_row, start_col:end_col]
     #     print(".\n", zoomed_out.shape)
@@ -84,26 +121,39 @@ def preprocess(file_path, cells_number, total_size=None, to_file=None, show_imag
 
         plt.show()
 
+    assert image_size is not None, "Image size must be provided."
+
     basic_matrix = tiff_to_matrix()
     if show_images:
         print(basic_matrix.shape)
         display_matrix(basic_matrix)
 
-    if total_size is None:
-        total_size = max(len(basic_matrix), len(basic_matrix[0]))
-
-    matrix_adjusted = adjust_dimensions(basic_matrix)
+    trimmed_matrix = trim_matrix(basic_matrix)
     if show_images:
-        print(matrix_adjusted.shape)
-        display_matrix(matrix_adjusted)
+        print(trimmed_matrix.shape)
+        display_matrix(trimmed_matrix)
 
-    matrix_remapped = remap(matrix_adjusted)
+    map_start_coords_center = determinate_map_start_coords_center()
+
+    created_map = create_map()
+    if show_images:
+        print(created_map.shape)
+        display_matrix(created_map)
+
+
+
+    # matrix_adjusted = adjust_dimensions(created_map)
+    # if show_images:
+    #     print(matrix_adjusted.shape)
+    #     display_matrix(matrix_adjusted)
+
+    matrix_remapped = remap(created_map)
     if show_images:
         display_matrix(matrix_remapped)
 
     reshaped_mat = matrix_remapped.reshape(
-        cells_number, total_size // cells_number,
-        cells_number, total_size // cells_number)
+        cells_number, image_size // cells_number,
+        cells_number, image_size // cells_number)
 
     reshaped_rounded_mat = np.round(reshaped_mat.mean(axis=(1, 3))).astype(int)
 
@@ -111,7 +161,7 @@ def preprocess(file_path, cells_number, total_size=None, to_file=None, show_imag
         display_matrix(reshaped_rounded_mat)
 
     matrix_zeroed = np.zeros_like(reshaped_rounded_mat)
-    step = max(min(int(cells_number / total_size * 10), 3), 1)
+    step = max(min(int(cells_number / image_size * 10), 3), 1)
     if show_images:
         print(reshaped_rounded_mat.shape)
         print(matrix_zeroed.shape)
@@ -119,7 +169,7 @@ def preprocess(file_path, cells_number, total_size=None, to_file=None, show_imag
     if show_images:
         display_matrix(matrix_zeroed)
 
-    kernel_size = max(1, cells_number // 17)
+    kernel_size = max(1, cells_number // 14)
     convolved_arr = convolve2d(matrix_zeroed, gaussian_kernel(kernel_size, 3), mode='same')
     # convolved_arr = convolve2d(matrix_remapped, gaussian_kernel(50, 1), mode='same')
     reshaped_mat = convolved_arr.reshape(
@@ -139,6 +189,8 @@ def preprocess(file_path, cells_number, total_size=None, to_file=None, show_imag
 
     result_2 = np.round(reshaped_mat_2.mean(axis=(1, 3))).astype(int)
 
+    # result_2 = reshaped_rounded_mat
+
     if show_images:
         display_matrix(result_2)
 
@@ -146,6 +198,18 @@ def preprocess(file_path, cells_number, total_size=None, to_file=None, show_imag
         np.savetxt(to_file, result_2, delimiter=",")
     return result_2
 
+def display_from_file(file_path):
+
+    def display_matrix(matrix):
+        fig, ax = plt.subplots(figsize=(10, 10))
+        ax.imshow(matrix, cmap='viridis', interpolation='nearest')
+        cbar = plt.colorbar(ax.imshow(matrix, cmap='viridis', interpolation='nearest'))
+        cbar.set_label('Value')
+
+        plt.show()
+
+    matrix = np.loadtxt(file_path, delimiter=",")
+    display_matrix(matrix)
 
 def load_matrix(file_path):
     return np.genfromtxt(file_path, delimiter=",")
@@ -220,7 +284,7 @@ def remove_angle_brackets_content(text):
     return result
 
 
-def plot_scores(filename, values_name, drones_parameters, drone_hives_parameters):
+def plot_scores(filename, values_name, drones_parameters, drone_hives_parameters, map_name):
     df = pd.read_csv(filename, sep=";", index_col=0)
     plt.figure(figsize=(10, 10))
 
@@ -242,7 +306,7 @@ def plot_scores(filename, values_name, drones_parameters, drone_hives_parameters
 
     plt.xlabel("Iterations")
     plt.ylabel(values_name)
-    plt.title(values_name + " by iterations")
+    plt.title("\"" + filename[32:-4] + "\": " + values_name + " by iterations")
     plt.legend()
 
     formatter = FuncFormatter(lambda y, _: '{:.2%}'.format(y))  # Format the tick labels to display percentages

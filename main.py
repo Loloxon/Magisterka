@@ -6,6 +6,9 @@ import numpy as np
 
 import utils
 from conf import Conf
+from drone_hive_ACO import DroneHiveACO
+from drone_hive_PSA import DroneHivePSA
+from drone_hive_PSO import DroneHivePSO
 from drone_hives.drone_hive_random_taboo import DroneHiveRandomTaboo
 from drone_hives.drone_hive_try1 import DroneHiveTry1
 from drone_hives.drone_hive_GWO import DroneHiveGWO
@@ -61,17 +64,33 @@ def initialize_drones(conf: Conf):
     return drones
 
 
+def spaced_with_margin(length, num_per_side, margin):
+    if num_per_side == 1:
+        return np.array([length / 2.0])
+    return np.linspace(margin*2, length - margin*2, num=num_per_side)
+
 def initialize_drone_hives(conf: Conf):
     drone_hives = []
 
     starting_positions = []
-    for i in range(conf.drones_starting_margin * 2, conf.map_size,
-                   conf.map_size // conf.drones_starting_per_side):
+
+    # step = (conf.map_size-conf.drones_starting_margin * 2)//(conf.drones_starting_per_side+1)
+    # spaced_with_margin(conf.map_size, conf.drones_starting_per_side, conf.drones_starting_margin)
+    # if conf.drones_starting_per_side%2==0:
+    for i in spaced_with_margin(conf.map_size, conf.drones_starting_per_side, conf.drones_starting_margin):
         for starting_position in [(i, conf.drones_starting_margin),
                                   (i, conf.map_size - conf.drones_starting_margin),
                                   (conf.drones_starting_margin, i),
                                   (conf.map_size - conf.drones_starting_margin, i)]:
             starting_positions.append(starting_position)
+    # else:
+    #     for i in range(conf.drones_starting_margin * 2, conf.map_size,
+    #                    conf.map_size // conf.drones_starting_per_side):
+    #         for starting_position in [(i, conf.drones_starting_margin),
+    #                                   (i, conf.map_size - conf.drones_starting_margin),
+    #                                   (conf.drones_starting_margin, i),
+    #                                   (conf.map_size - conf.drones_starting_margin, i)]:
+    #             starting_positions.append(starting_position)
 
     for params_id, params in enumerate(conf.drone_hives_parameters):
         for id in range(conf.drones_starting_per_point):
@@ -88,8 +107,26 @@ def initialize_drone_hives(conf: Conf):
                                                      params_id=params_id,
                                                      id=id,
                                                      conf=conf))
+                case "DroneHiveACO":
+                    drone_hives.append(DroneHiveACO(copy.deepcopy(starting_positions),
+                                                     color=params[1],
+                                                     params_id=params_id,
+                                                     id=id,
+                                                     conf=conf))
                 case "DroneHiveGWO":
                     drone_hives.append(DroneHiveGWO(copy.deepcopy(starting_positions),
+                                                     color=params[1],
+                                                     params_id=params_id,
+                                                     id=id,
+                                                     conf=conf))
+                case "DroneHivePSA":
+                    drone_hives.append(DroneHivePSA(copy.deepcopy(starting_positions),
+                                                     color=params[1],
+                                                     params_id=params_id,
+                                                     id=id,
+                                                     conf=conf))
+                case "DroneHivePSO":
+                    drone_hives.append(DroneHivePSO(copy.deepcopy(starting_positions),
                                                      color=params[1],
                                                      params_id=params_id,
                                                      id=id,
@@ -98,28 +135,71 @@ def initialize_drone_hives(conf: Conf):
 
 
 if __name__ == "__main__":
-    conf = Conf()
-    root = tk.Tk()
+    for map_name in ["baseline", "fuerta", "góry", "hell", "krakow"]:
+        for mode in ["_std", "_zmd_out", "_zmd_out_moved"]:
+            for drones_starting_per_side in [2, 4, 8]:
 
-    start = time.time()
-    utils.preprocess("assets/original/" + conf.map_name + ".tiff", conf.cells_number, conf.image_size,
-                     "assets/processed/" + conf.map_name + ".csv", True, conf.map_start_coords)
-    print(f"Preparing map took: {time.time() - start:.4f}[s]")
+                try:
+                    # mode = "_zmd_out_moved"
+                    full_map_name = "assets/processed/" + map_name + mode + ".csv"
 
-    start = time.time()
-    grid_matrix = utils.load_matrix("assets/processed/" + conf.map_name + ".csv")
-    print(f"Loading matrix took: {time.time() - start:.4f}[s]")
 
-    start = time.time()
-    drones = initialize_drones(conf)
-    print(f"Initializing drones took: {time.time() - start:.4f}[s]")
 
-    start = time.time()
-    drone_hives = initialize_drone_hives(conf)
-    print(f"Initializing drones took: {time.time() - start:.4f}[s]")
+                # for map_name in ["baseline", "fuerta", "góry", "hell", "krakow"]:
+                # for map_name in ["krakow"]:
+                # for map_name in ["góry", "hell", "krakow"]:
 
-    max_signal = np.max(grid_matrix)
-    conf.max_signal = max_signal
-    print("Max value on whole map:", max_signal)
-    gui = GUI(root, grid_matrix, drones, drone_hives, max_signal, conf)
-    gui.run()
+                    conf = Conf()
+
+                    conf.map_name = map_name+mode
+                    conf.drones_starting_per_side = drones_starting_per_side
+                    # conf.map_name = "góry"
+                    # if conf.map_name == "baseline" or conf.map_name == "fuerta" or conf.map_name == "góry":
+                    #     conf.image_size = 800
+                    # elif conf.map_name == "hell":
+                    #     conf.image_size = 600
+                    # elif conf.map_name == "krakow":
+                    #     conf.image_size = 400
+                    # else:
+                    #     raise ValueError(f"Unknown map name: {conf.map_name}")
+
+
+                    root = tk.Tk()
+
+                    # start = time.time()
+                    # utils.preprocess("assets/original/" + conf.map_name + ".tiff", conf.cells_number, conf.image_size,
+                    #                  "assets/processed/" + conf.map_name + ".csv", True, conf.map_start_coords_center)
+                    # print(f"Preparing map took: {time.time() - start:.4f}[s]")
+
+                    # utils.display_from_file(full_map_name)
+                    # break
+                # break
+
+                    start = time.time()
+                    grid_matrix = utils.load_matrix(full_map_name)
+                    # print(f"Loading matrix took: {time.time() - start:.4f}[s]")
+
+                    start = time.time()
+                    drones = initialize_drones(conf)
+                    # print(f"Initializing drones took: {time.time() - start:.4f}[s]")
+
+                    start = time.time()
+                    drone_hives = initialize_drone_hives(conf)
+                    # print(f"Initializing drones hives took: {time.time() - start:.4f}[s]")
+
+                    max_signal = np.max(grid_matrix)
+                    conf.max_signal = max_signal
+                    # print("Max value on whole map:", max_signal)
+
+                    start = time.time()
+                    gui = GUI(root, grid_matrix, drones, drone_hives, max_signal, conf)
+                    # print(f"Initializing GUI took: {time.time() - start:.4f}[s]")
+
+                    gui.run()
+
+                except Exception as e:
+                    print(f"An error occurred: {e}")
+                    continue
+        #         break
+        #     break
+        # break

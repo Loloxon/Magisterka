@@ -1,31 +1,40 @@
-import random
-
-
 class Conf:
     def __init__(self):
-        self.map_name = "góry"
-        # self.map_name = "hell"
+        # self.map_name = "baseline"
+        # self.map_name = "fuerta"
+        # self.map_name = "góry"
+        self.map_name = "hell"
+        # self.map_name = "krakow"
 
-        self.image_size = 4000
+        self.map_size = 1000  # dont change
+
         self.cells_number = 200
-        self.map_size = 600
-        self.map_start_coords = (random.randint(200, 1800), random.randint(200, 1800))
+        self.image_size = 400
+        # self.map_start_coords_center = (random.randint(self.image_size // 10, self.image_size // 10 * 9),
+        #                                 random.randint(self.image_size // 10, self.image_size // 10 * 9))
+        self.map_start_coords_center = (700, 300)
+        self.map_start_coords_center = None
 
         self.visited_area_radius = 5
 
         self.cell_size = self.map_size // self.cells_number
 
         self.drones_starting_margin = self.map_size // 20
-        self.drones_starting_per_side = 4
-        self.drones_starting_per_point = 5
+        self.drones_starting_per_side = 1
+        self.drones_starting_per_point = 1
+        self.visualization_hidden = not False
+        self.drones_hidden = not False
 
-        self.iterations = 1000
-        self.refresh_interval = 10
-        self.save_to_file_interval = 5
+        self.iterations = 3000
+        self.refresh_interval = 5
+        self.save_to_file_interval = 2
 
-        self.log_avg_max_sig = 'assets/logs/log_avg_max_sig.txt'
-        self.log_max_count = 'assets/logs/log_max_count.txt'
-        self.log_avg_current_sig = 'assets/logs/log_avg_current_sig.txt'
+        self.log_avg_max_sig = 'assets/logs/log_avg_max_sig_____' + self.map_name + "_" + str(
+            self.drones_starting_per_side) + '.txt'
+        self.log_max_count = 'assets/logs/log_max_count_______' + self.map_name + "_" + str(
+            self.drones_starting_per_side) + '.txt'
+        self.log_avg_current_sig = 'assets/logs/log_avg_current_sig_' + self.map_name + "_" + str(
+            self.drones_starting_per_side) + '.txt'
 
         self.drones_parameters = fill_drones_parameters()
 
@@ -33,12 +42,20 @@ class Conf:
 
         self.max_signal = None
 
+    def update_names(self):
+        self.log_avg_max_sig = 'assets/logs/log_avg_max_sig_____' + self.map_name + "_" + str(
+            self.drones_starting_per_side) + '.txt'
+        self.log_max_count = 'assets/logs/log_max_count_______' + self.map_name + "_" + str(
+            self.drones_starting_per_side) + '.txt'
+        self.log_avg_current_sig = 'assets/logs/log_avg_current_sig_' + self.map_name + "_" + str(
+            self.drones_starting_per_side) + '.txt'
+
 
 def fill_drones_parameters():
     drones_parameters = []
 
     # drones_parameters.append(("DroneRandom", "purple"))
-    drones_parameters.append(("DroneAnnealing", "blue", 1, 0.4, 1))
+    # drones_parameters.append(("DroneAnnealing", "blue", 1, 0.4, 1))
     # drones_parameters.append(("DroneNoDescent", "orange", 0.75))
 
     # # descent_probabs = [0, 0.25, 0.5, 0.75, 0.85]
@@ -82,11 +99,17 @@ def fill_drones_parameters():
 
     return drones_parameters
 
+
 def fill_drone_hives_parameters():
     drone_hives_parameters = []
 
     # drone_hives_parameters.append(("DroneHiveRandomTaboo", "green"))
-    drone_hives_parameters.append(("DroneHiveGWO", "grey"))
     # drone_hives_parameters.append(("DroneHiveTry1", "yellow"))
+
+    drone_hives_parameters.append(("DroneHiveGWO", "grey"))
+    drone_hives_parameters.append(("DroneHivePSA", "green"))
+    drone_hives_parameters.append(("DroneHivePSO", "blue"))
+
+    # drone_hives_parameters.append(("DroneHiveACO", "red"))
 
     return drone_hives_parameters
