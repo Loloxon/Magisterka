@@ -20,7 +20,7 @@ Dostępne algorytmy:
 - Interaktywna wizualizacja w **Tkinterze** (mapa, drony, ścieżki, feromony).  
 - Sterowanie symulacją: start/stop, ukrywanie/widoczność wizualizacji.  
 - Logowanie metryk do plików `.csv`:  
-  - średni maksymalny sygnał,  
+  - maksymalny sygnał dotychczas wykryty,  
   - liczba dronów, które osiągnęły maksimum,  
   - średni sygnał bieżący.  
 - Automatyczne generowanie wykresów w **Matplotlib** (SVG/PDF, wektorowe).  
@@ -33,6 +33,6 @@ Dostępne algorytmy:
   - liczba iteracji,  
   - liczba dronów,  
   - rozmiar mapy,  
-  - parametry algorytmów (np. `alpha, beta, rho` w ACO).  
+  - parametry algorytmów.  
 
 - W folderze `assets/graphs` znajdziesz wygenerowane wykresy porównawcze.
