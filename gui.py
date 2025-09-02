@@ -1,8 +1,10 @@
+import os
+
 import itertools
 import threading
 import tkinter as tk
 from time import sleep
-
+import numpy as np
 from tqdm import tqdm
 
 from map import Map
@@ -30,24 +32,25 @@ class GUI:
         self.visualization_hidden = conf.visualization_hidden
         self.drones_hidden = conf.drones_hidden
 
-        # self.canvas = tk.Canvas(self.master,
-        #                         width=len(grid_matrix[0]) * self.cell_size,
-        #                         height=len(grid_matrix) * self.cell_size)
         self.canvas = tk.Canvas(self.master,
-                                width=200,
-                                height=100)
+                                width=len(grid_matrix[0]) * self.cell_size,
+                                height=len(grid_matrix) * self.cell_size)
+        # self.canvas = tk.Canvas(self.master,
+        #                         width=200,
+        #                         height=100)
         self.canvas.grid(row=0, column=0)
+        # self.canvas = None
 
         self.drones_released = False
-        self.drones_control_btn = tk.Button(self.master, text="Release the Drones!",
+        self.drones_control_btn = tk.Button(self.master, text="Uruchom symulacje",
                                             command=self.drones_control_btn_clicked)
         self.drones_control_btn.grid(row=1, column=0, pady=10)
 
         self.simulation_hidden = False
-        self.hide_btn = tk.Button(self.master, text="Hide simulation", command=self.hide_btn_clicked)
+        self.hide_btn = tk.Button(self.master, text="Ukryj podgląd", command=self.hide_btn_clicked)
         self.hide_btn.grid(row=2, column=0, pady=10)
 
-        self.plots_btn = tk.Button(self.master, text="Draw plots", command=self.plots_btn_clicked)
+        self.plots_btn = tk.Button(self.master, text="Stwórz wykresy", command=self.plots_btn_clicked)
         self.plots_btn.grid(row=3, column=0, pady=10)
 
         self.grid_matrix = grid_matrix
@@ -69,7 +72,7 @@ class GUI:
             if not self.drones_hidden:
                 drone_hive.draw()
 
-        self.prepare_file()
+        self.prepare_file_new()
 
     def run(self):
         self.drones_movement_thread = threading.Thread(target=self.move_drones)
@@ -77,21 +80,27 @@ class GUI:
         self.drones_movement_thread.start()
 
         self.drones_released = True
-        self.drones_control_btn.config(text="Stop the Drones!")
+        self.drones_control_btn.config(text="Zatrzymaj symulacje")
 
         self.conf.update_names()
-        print("Starting simulation: " + self.conf.map_name + ", " + str(self.conf.drones_starting_per_side))
-        self.master.mainloop()
+        self.drones_movement_thread.join()
+
+        # # save canva as png to file:
+        # self.canvas.update()
+        # self.canvas.postscript(file="canvas_output.ps", colormode="color")
+
+        # self.master.mainloop()
+
 
     def drones_control_btn_clicked(self):
         if self.drones_released:
             self.drones_released = False
             print("Drones stopped!")
-            self.drones_control_btn.config(text="Release the Drones!")
+            self.drones_control_btn.config(text="Uruchom symulacje")
         else:
             self.drones_released = True
             print("Drones released!")
-            self.drones_control_btn.config(text="Stop the Drones!")
+            self.drones_control_btn.config(text="Zatrzymaj symulacje")
 
     def hide_btn_clicked(self):
         if self.simulation_hidden:
@@ -102,15 +111,15 @@ class GUI:
             for drone_hive in self.drone_hives:
                 drone_hive.draw()
             print("Simulation shown!")
-            self.hide_btn.config(text="Hide simulation")
+            self.hide_btn.config(text="Ukryj podgląd")
         else:
             self.simulation_hidden = True
             self.map.hide_grid()
             print("Simulation hidden!")
-            self.hide_btn.config(text="Show simulation")
+            self.hide_btn.config(text="Pokaż podgląd")
 
     def plots_btn_clicked(self):
-        print("Drawing plots!")
+        # print("Drawing plots!")
         self.conf.update_names()
 
         plot_scores(self.conf.log_avg_max_sig, "Average max signal", self.drones_parameters,
@@ -150,61 +159,61 @@ class GUI:
                     file.write(str(name) + ": " + str(info) + ";")
                 file.write("\n")
 
-    def save_to_file(self, iteration_no):
+    def prepare_file_new(self):
         self.conf.update_names()
-        with open(self.conf.log_avg_max_sig, 'a') as file1, \
-                open(self.conf.log_max_count, 'a') as file2, \
-                open(self.conf.log_avg_current_sig, 'a') as file3:
-            file1.write(str(iteration_no) + ";")
-            file2.write(str(iteration_no) + ";")
-            file3.write(str(iteration_no) + ";")
+        for file_name in [self.conf.log_avg_max_sig, self.conf.log_max_count, self.conf.log_avg_current_sig]:
+            for _, params in enumerate(self.drone_hives_parameters):
+                file_name_new = file_name[:-4] + "_" + str(params[0])[9:] + ".csv"
 
-            for params_id, params in enumerate(self.drones_parameters):
-                summed_max = 0
-                summed_curr = 0
-                max_visited = 0
-                no = 0
-                for drone in self.drones:
-                    if drone.params_id == params_id:
-                        summed_max += drone.max_signal
-                        summed_curr += drone.curr_signal
-                        no += 1
-                        if drone.max_signal == self.map.max_signal:
-                            max_visited += 1
+                # path = "assets\\graphs_v3_new"
+                os.makedirs(file_name_new[:-10], exist_ok=True)
 
-                # with open(self.conf.log_avg_max_sig, 'a') as file:
-                file1.write(str((summed_max / no) / self.map.max_signal) + ";")
-                # with open(self.conf.log_max_count, 'a') as file:
-                file2.write(str(max_visited / no) + ";")
-                # with open(self.conf.log_avg_current_sig, 'a') as file:
-                file3.write(str((summed_curr / no) / self.map.max_signal) + ";")
+                with open(file_name_new, 'w') as file:
+                    file.write(";")
+                    for i in range(self.conf.drones_starting_per_point):
 
+                        file.write(f"version_{i};")
+                    file.write("\n")
+
+    def save_to_file_new(self):
+        self.prepare_file_new()
+        self.conf.update_names()
+        for file_name in [self.conf.log_avg_max_sig, self.conf.log_max_count, self.conf.log_avg_current_sig]:
             for params_id, params in enumerate(self.drone_hives_parameters):
-                summed_max = 0
-                summed_curr = 0
-                max_visited = 0
-                no = 0
-                for drone_hive in self.drone_hives:
-                    if drone_hive.params_id == params_id:
-                        summed_max += drone_hive.max_signal
-                        summed_curr += drone_hive.curr_signal
-                        no += 1
-                        if drone_hive.max_signal == self.map.max_signal:
-                            max_visited += 1
+                file_name_new = file_name[:-4] + "_" + str(params[0])[9:] + ".csv"
 
-                # with open(self.conf.log_avg_max_sig, 'a') as file:
-                file1.write(str((summed_max / no) / self.map.max_signal) + ";")
-                # with open(self.conf.log_max_count, 'a') as file:
-                file2.write(str(max_visited / no) + ";")
-                # with open(self.conf.log_avg_current_sig, 'a') as file:
-                file3.write(str((summed_curr / no) / self.map.max_signal) + ";")
+                with open(file_name_new, 'a') as file:
+                    # file.write(str(iteration_no) + ";")
+                    values_to_save = []
+                    for drone_hive in self.drone_hives:
+                        # summed_curr = 0
 
-            # with open(self.conf.log_avg_max_sig, 'a') as file:
-            file1.write("\n")
-            # with open(self.conf.log_max_count, 'a') as file:
-            file2.write("\n")
-            # with open(self.conf.log_avg_current_sig, 'a') as file:
-            file3.write("\n")
+                        if drone_hive.params_id == params_id:
+                            # summed_curr += drone_hive.curr_signal
+
+                            if file_name.startswith(self.conf.log_avg_max_sig):
+                                values_to_save.append(drone_hive.max_signal_for_metric)
+                                # value_to_save = np.round(summed_curr / self.map.max_signal, 4)
+
+                            elif file_name.startswith(self.conf.log_max_count):
+                                values_to_save.append(drone_hive.max_count_for_metric)
+                                # value_to_save = np.round(drone_hive.visited_max_signal, 4)
+
+                            elif file_name.startswith(self.conf.log_avg_current_sig):
+                                values_to_save.append(drone_hive.curr_signal_for_metric)
+                                # value_to_save = np.round(summed_curr / self.map.max_signal, 4)
+                            else:
+                                raise ValueError("Unknown file name")
+                            # file.write(str(value_to_save) + ";")
+
+                            values_to_save[-1].append(drone_hive.first_iteration_hit_max)
+
+                    transposed = list(zip(*values_to_save))
+                    for i, row in enumerate(transposed, start=1):
+                        line = [str(i)] + [str(val) for val in row]
+                        file.write(";".join(line) + "\n")
+
+                    file.write("\n")
 
     def move_drones(self):
         finishing_moves = 100
@@ -225,15 +234,19 @@ class GUI:
                     if not self.conf.drones_hidden:
                         entity.draw()
 
-            # Save to file at intervals
-            if iteration % self.save_to_file_interval == 0:
-                self.save_to_file(iteration)
+            # # Save to file at intervals
+            # if iteration % 100 == 0:
+            #     self.save_to_file_new(iteration)
 
             # Check end condition only once per iteration
+            # if not end_condition:
+            #     end_condition = all(
+            #         entity.max_signal >= self.map.max_signal for entity in
+            #         itertools.chain(self.drones, self.drone_hives)
+            #     )
             if not end_condition:
                 end_condition = all(
-                    entity.max_signal >= self.map.max_signal for entity in
-                    itertools.chain(self.drones, self.drone_hives)
+                    hive.can_end for hive in self.drone_hives
                 )
 
             if end_condition:
@@ -241,11 +254,12 @@ class GUI:
             if finishing_moves <= 0:
                 break
 
-        print("Ending simulation!")
+        # print("Ending simulation!")
 
         self.drones_released = True
-        self.drones_control_btn.config(text="Drones are done!")
-        self.drones_control_btn.config(state="disabled")
-        self.plots_btn_clicked()
+        self.save_to_file_new()
+        # self.drones_control_btn.config(text="Drones are done!")
+        # self.drones_control_btn.config(state="disabled")
+        # self.plots_btn_clicked()
 
-        self.master.destroy()
+        # self.master.destroy()

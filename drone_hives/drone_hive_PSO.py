@@ -18,6 +18,13 @@ class DroneHivePSO:
 
         self.max_signal = float('-inf')
         self.curr_signal = None
+        self.max_signal_for_metric = []
+        self.max_count_for_metric = []
+        self.curr_signal_for_metric = []
+        self.first_iteration_hit_max = float('-inf')
+        self.visited_max_signal = 0
+        self.total_max_signal = conf.max_signal
+        self.can_end = False
 
         # PSO params
         self.w = 0.7     # inertia
@@ -49,7 +56,7 @@ class DroneHivePSO:
         self.gbest_score = max_score
         self.gbest_position = np.array([chosen.x, chosen.y], dtype=float)
 
-
+        visited_max_signal = 0
         for child in self.children:
             pos = np.array([child.x, child.y], dtype=float)
             v = child.velocity
@@ -67,9 +74,19 @@ class DroneHivePSO:
 
             child.x, child.y = new_x, new_y
             child.update_signal()
+            if child.max_signal == self.total_max_signal:
+                visited_max_signal += 1
 
         self.curr_signal = self.gbest_score
+        self.visited_max_signal = visited_max_signal
         self.max_signal = max(self.max_signal, self.curr_signal)
+        self.max_signal_for_metric.append(np.round(self.max_signal / self.total_max_signal, 4))
+        self.max_count_for_metric.append(np.round(self.visited_max_signal / len(self.children), 4))
+        self.curr_signal_for_metric.append(np.round(np.mean([c.curr_signal for c in self.children]) / self.total_max_signal, 4))
+        if self.first_iteration_hit_max == float('-inf') and self.max_signal == self.total_max_signal:
+            self.first_iteration_hit_max = t
+        if self.curr_signal_for_metric[-1] == 1.0:
+            self.can_end = True
 
     def move_toward(self, current, target, step_size=1):
         x, y = current

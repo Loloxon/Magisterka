@@ -59,6 +59,7 @@ class Map:
                                                     (len(self.grid_matrix) + 1) * self.square_size,
                                                     fill="grey", outline="")
 
+
     def get_value_on(self, cords, drone_size):
         nominator = 0
         denominator = 0

@@ -188,6 +188,7 @@ def preprocess(file_path, cells_number, image_size=None, to_file=None, show_imag
         cells_number, 1)
 
     result_2 = np.round(reshaped_mat_2.mean(axis=(1, 3))).astype(int)
+    result_2 = np.round(result_2, 4)
 
     # result_2 = reshaped_rounded_mat
 
@@ -195,7 +196,7 @@ def preprocess(file_path, cells_number, image_size=None, to_file=None, show_imag
         display_matrix(result_2)
 
     if to_file:
-        np.savetxt(to_file, result_2, delimiter=",")
+        np.savetxt(to_file, result_2, delimiter=";")
     return result_2
 
 def display_from_file(file_path):
@@ -208,11 +209,11 @@ def display_from_file(file_path):
 
         plt.show()
 
-    matrix = np.loadtxt(file_path, delimiter=",")
+    matrix = np.loadtxt(file_path, delimiter=";")
     display_matrix(matrix)
 
 def load_matrix(file_path):
-    return np.genfromtxt(file_path, delimiter=",")
+    return np.genfromtxt(file_path, delimiter=";")
 
 
 def viridis_colormap(color_value, grid_matrix):

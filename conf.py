@@ -19,9 +19,9 @@ class Conf:
 
         self.cell_size = self.map_size // self.cells_number
 
-        self.drones_starting_margin = self.map_size // 20
-        self.drones_starting_per_side = 1
-        self.drones_starting_per_point = 1
+        self.drones_starting_margin = self.map_size // 40
+        self.drones_starting_per_side = 8
+        self.drones_starting_per_point = 15
         self.visualization_hidden = not False
         self.drones_hidden = not False
 
@@ -29,12 +29,12 @@ class Conf:
         self.refresh_interval = 5
         self.save_to_file_interval = 2
 
-        self.log_avg_max_sig = 'assets/logs/log_avg_max_sig_____' + self.map_name + "_" + str(
-            self.drones_starting_per_side) + '.txt'
-        self.log_max_count = 'assets/logs/log_max_count_______' + self.map_name + "_" + str(
-            self.drones_starting_per_side) + '.txt'
-        self.log_avg_current_sig = 'assets/logs/log_avg_current_sig_' + self.map_name + "_" + str(
-            self.drones_starting_per_side) + '.txt'
+        self.log_avg_max_sig = 'assets/logs_v3/log_avg_max_sig_____' + self.map_name + "/" + str(
+            self.drones_starting_per_side) + '.csv'
+        self.log_max_count = 'assets/logs_v3/log_max_count_______' + self.map_name + "/" + str(
+            self.drones_starting_per_side) + '.csv'
+        self.log_avg_current_sig = 'assets/logs_v3/log_avg_current_sig_' + self.map_name + "/" + str(
+            self.drones_starting_per_side) + '.csv'
 
         self.drones_parameters = fill_drones_parameters()
 
@@ -43,12 +43,12 @@ class Conf:
         self.max_signal = None
 
     def update_names(self):
-        self.log_avg_max_sig = 'assets/logs/log_avg_max_sig_____' + self.map_name + "_" + str(
-            self.drones_starting_per_side) + '.txt'
-        self.log_max_count = 'assets/logs/log_max_count_______' + self.map_name + "_" + str(
-            self.drones_starting_per_side) + '.txt'
-        self.log_avg_current_sig = 'assets/logs/log_avg_current_sig_' + self.map_name + "_" + str(
-            self.drones_starting_per_side) + '.txt'
+        self.log_avg_max_sig = 'assets/logs_v3/log_avg_max_sig_____' + self.map_name + "/" + str(
+            self.drones_starting_per_side) + '.csv'
+        self.log_max_count = 'assets/logs_v3/log_max_count_______' + self.map_name + "/" + str(
+            self.drones_starting_per_side) + '.csv'
+        self.log_avg_current_sig = 'assets/logs_v3/log_avg_current_sig_' + self.map_name + "/" + str(
+            self.drones_starting_per_side) + '.csv'
 
 
 def fill_drones_parameters():
@@ -106,7 +106,7 @@ def fill_drone_hives_parameters():
     # drone_hives_parameters.append(("DroneHiveRandomTaboo", "green"))
     # drone_hives_parameters.append(("DroneHiveTry1", "yellow"))
 
-    drone_hives_parameters.append(("DroneHiveGWO", "grey"))
+    drone_hives_parameters.append(("DroneHiveGWO", "red"))
     drone_hives_parameters.append(("DroneHivePSA", "green"))
     drone_hives_parameters.append(("DroneHivePSO", "blue"))
 

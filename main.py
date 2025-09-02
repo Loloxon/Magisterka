@@ -67,7 +67,8 @@ def initialize_drones(conf: Conf):
 def spaced_with_margin(length, num_per_side, margin):
     if num_per_side == 1:
         return np.array([length / 2.0])
-    return np.linspace(margin*2, length - margin*2, num=num_per_side)
+    return np.linspace(margin * 2, length - margin * 2, num=num_per_side)
+
 
 def initialize_drone_hives(conf: Conf):
     drone_hives = []
@@ -109,97 +110,121 @@ def initialize_drone_hives(conf: Conf):
                                                      conf=conf))
                 case "DroneHiveACO":
                     drone_hives.append(DroneHiveACO(copy.deepcopy(starting_positions),
-                                                     color=params[1],
-                                                     params_id=params_id,
-                                                     id=id,
-                                                     conf=conf))
+                                                    color=params[1],
+                                                    params_id=params_id,
+                                                    id=id,
+                                                    conf=conf))
                 case "DroneHiveGWO":
                     drone_hives.append(DroneHiveGWO(copy.deepcopy(starting_positions),
-                                                     color=params[1],
-                                                     params_id=params_id,
-                                                     id=id,
-                                                     conf=conf))
+                                                    color=params[1],
+                                                    params_id=params_id,
+                                                    id=id,
+                                                    conf=conf))
                 case "DroneHivePSA":
                     drone_hives.append(DroneHivePSA(copy.deepcopy(starting_positions),
-                                                     color=params[1],
-                                                     params_id=params_id,
-                                                     id=id,
-                                                     conf=conf))
+                                                    color=params[1],
+                                                    params_id=params_id,
+                                                    id=id,
+                                                    conf=conf))
                 case "DroneHivePSO":
                     drone_hives.append(DroneHivePSO(copy.deepcopy(starting_positions),
-                                                     color=params[1],
-                                                     params_id=params_id,
-                                                     id=id,
-                                                     conf=conf))
+                                                    color=params[1],
+                                                    params_id=params_id,
+                                                    id=id,
+                                                    conf=conf))
     return drone_hives
 
 
 if __name__ == "__main__":
-    for map_name in ["baseline", "fuerta", "góry", "hell", "krakow"]:
+    start_0 = time.time()
+    # Took: 164:34
+    # for map_name in ["baseline"]:
+    for map_name in ["góry", "hell", "krakow"]:
+    # for map_name in ["baseline", "fuerta", "góry", "hell", "krakow"]:
+        start_1 = time.time()
+        print("=" * 30 + "|  " + map_name)
+        # for mode in ["_std"]:
         for mode in ["_std", "_zmd_out", "_zmd_out_moved"]:
-            for drones_starting_per_side in [2, 4, 8]:
+            if not(map_name == "góry" and mode != "_zmd_out_moved"):
+                start_2 = time.time()
+                print("=" * 20 + "|  " + map_name + mode)
+                # for drones_starting_per_side in [2]:
+                for drones_starting_per_side in [2, 4, 8]:
+                    start_3 = time.time()
+                    print("=" * 5 + "|  " + map_name + mode + "_" + str(drones_starting_per_side))
+                    try:
+                        # mode = "_zmd_out_moved"
+                        full_map_name = "assets/processed/" + map_name + mode + ".csv"
 
-                try:
-                    # mode = "_zmd_out_moved"
-                    full_map_name = "assets/processed/" + map_name + mode + ".csv"
+                        # for map_name in ["baseline", "fuerta", "góry", "hell", "krakow"]:
+                        # for map_name in ["krakow"]:
+                        # for map_name in ["góry", "hell", "krakow"]:
+
+                        conf = Conf()
+
+                        conf.map_name = map_name + mode
+                        conf.drones_starting_per_side = drones_starting_per_side
+                        # conf.map_name = "góry"
+                        if conf.map_name.startswith("baseline") or conf.map_name.startswith("fuerta") or conf.map_name.startswith("góry"):
+                            conf.image_size = 800
+                        elif conf.map_name.startswith("hell"):
+                            conf.image_size = 600
+                        elif conf.map_name.startswith("krakow"):
+                            conf.image_size = 400
+                        else:
+                            raise ValueError(f"Unknown map name: {conf.map_name}")
+
+                        root = tk.Tk()
+
+                        # start = time.time()
+                        # utils.preprocess("assets/original/" + conf.map_name + ".tiff", conf.cells_number, conf.image_size,
+                        #                  "assets/processed/" + conf.map_name + ".csv", True, conf.map_start_coords_center)
+                        # print(f"Preparing map took: {time.time() - start:.4f}[s]")
+
+                        # utils.display_from_file(full_map_name)
+                        # break
+                        # break
+
+                        start = time.time()
+                        grid_matrix = utils.load_matrix(full_map_name)
+                        # print(f"Loading matrix took: {time.time() - start:.4f}[s]")
+
+                        start = time.time()
+                        drones = initialize_drones(conf)
+                        # print(f"Initializing drones took: {time.time() - start:.4f}[s]")
 
 
+                        max_signal = np.max(grid_matrix)
+                        conf.max_signal = max_signal
+                        # print("Max value on whole map:", max_signal)
 
-                # for map_name in ["baseline", "fuerta", "góry", "hell", "krakow"]:
-                # for map_name in ["krakow"]:
-                # for map_name in ["góry", "hell", "krakow"]:
-
-                    conf = Conf()
-
-                    conf.map_name = map_name+mode
-                    conf.drones_starting_per_side = drones_starting_per_side
-                    # conf.map_name = "góry"
-                    # if conf.map_name == "baseline" or conf.map_name == "fuerta" or conf.map_name == "góry":
-                    #     conf.image_size = 800
-                    # elif conf.map_name == "hell":
-                    #     conf.image_size = 600
-                    # elif conf.map_name == "krakow":
-                    #     conf.image_size = 400
-                    # else:
-                    #     raise ValueError(f"Unknown map name: {conf.map_name}")
+                        start = time.time()
+                        drone_hives = initialize_drone_hives(conf)
+                        # print(f"Initializing drones hives took: {time.time() - start:.4f}[s]")
 
 
-                    root = tk.Tk()
+                        start = time.time()
+                        gui = GUI(root, grid_matrix, drones, drone_hives, max_signal, conf)
+                        # print(f"Initializing GUI took: {time.time() - start:.4f}[s]")
 
-                    # start = time.time()
-                    # utils.preprocess("assets/original/" + conf.map_name + ".tiff", conf.cells_number, conf.image_size,
-                    #                  "assets/processed/" + conf.map_name + ".csv", True, conf.map_start_coords_center)
-                    # print(f"Preparing map took: {time.time() - start:.4f}[s]")
+                        gui.run()
 
-                    # utils.display_from_file(full_map_name)
-                    # break
-                # break
+                    except Exception as e:
+                        print(f"An error occurred: {e}")
+                        continue
 
-                    start = time.time()
-                    grid_matrix = utils.load_matrix(full_map_name)
-                    # print(f"Loading matrix took: {time.time() - start:.4f}[s]")
-
-                    start = time.time()
-                    drones = initialize_drones(conf)
-                    # print(f"Initializing drones took: {time.time() - start:.4f}[s]")
-
-                    start = time.time()
-                    drone_hives = initialize_drone_hives(conf)
-                    # print(f"Initializing drones hives took: {time.time() - start:.4f}[s]")
-
-                    max_signal = np.max(grid_matrix)
-                    conf.max_signal = max_signal
-                    # print("Max value on whole map:", max_signal)
-
-                    start = time.time()
-                    gui = GUI(root, grid_matrix, drones, drone_hives, max_signal, conf)
-                    # print(f"Initializing GUI took: {time.time() - start:.4f}[s]")
-
-                    gui.run()
-
-                except Exception as e:
-                    print(f"An error occurred: {e}")
-                    continue
+                    elapsed_time = time.time() - start_3
+                    minutes, seconds = divmod(elapsed_time, 60)
+                    print("-" * 5 + f"|  Took: {int(minutes)}:{int(seconds):02}")
+                elapsed_time = time.time() - start_2
+                minutes, seconds = divmod(elapsed_time, 60)
+                print("-" * 20 + f"|  Took: {int(minutes)}:{int(seconds):02}")
+        elapsed_time = time.time() - start_1
+        minutes, seconds = divmod(elapsed_time, 60)
+        print("-" * 30 + f"|  Took: {int(minutes)}:{int(seconds):02}")
+    elapsed_time = time.time() - start_0
+    minutes, seconds = divmod(elapsed_time, 60)
+    print("=" * 40 + f"|  Took: {int(minutes)}:{int(seconds):02}")
         #         break
         #     break
         # break
